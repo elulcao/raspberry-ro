@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash env
 
 # Common files
 CMDLINE="/boot/cmdline.txt"
@@ -28,7 +28,7 @@ MOUNT="/usr/bin/mount"
 
 # Run as ROOT
 if [[ "$EUID" -ne 0 ]]; then
-    $ECHO "Please run as root"
+    "$ECHO" "Please run as root"
     exit
 fi
 
@@ -36,8 +36,8 @@ fi
 # thd: Triggerhappy global hotkey daemon
 # logrotate: Rotates, compresses, and mails system logs
 # dphys-swapfile: Set up, mount/unmount, and delete an swap file
-$APT -y remove triggerhappy logrotate dphys-swapfile
-$APT -y autoremove --purge
+"$APT" -y remove triggerhappy logrotate dphys-swapfile
+"$APT" -y autoremove --purge
 
 # Update repository and get latest packages
 # vim: Vi IMproved, a programmer's text editor
@@ -45,30 +45,31 @@ $APT -y autoremove --purge
 # resolvconf: A framework for managing multiple DNS configurations
 # git: The stupid content tracker
 # dnsutils:  This package delivers various client programs related to DNS
-$APT update ; $APT -y install vim busybox-syslogd git dnsutils
-$DPKG --purge rsyslog
+"$APT" update
+"$APT" -y install vim busybox-syslogd git dnsutils
+"$DPKG" --purge rsyslog
 
 # Create new files
-$TOUCH $DHCPRESOLV
+"$TOUCH" "$DHCPRESOLV"
 
 # Create symlinks
-$LN -svf $TMP             /var/lib/dhcp
-$LN -svf $TMP             /var/lib/dhcpcd5
-$LN -svf $TMP             /var/run
-$LN -svf $TMP             /var/spool
-$LN -svf $TMP             /var/lock
-$LN -svf $TMP/random-seed /var/lib/systemd/random-seed
-$LN -svf $DHCPRESOLV      $RESOLFCFG
+"$LN" -svf "$TMP"             /var/lib/dhcp
+"$LN" -svf "$TMP"             /var/lib/dhcpcd5
+"$LN" -svf "$TMP"             /var/run
+"$LN" -svf "$TMP"             /var/spool
+"$LN" -svf "$TMP"             /var/lock
+"$LN" -svf "$TMP"/random-seed /var/lib/systemd/random-seed
+"$LN" -svf "$DHCPRESOLV"      "$RESOLFCFG"
 
 # System to mount them read-only
-$CAT <<EOT >> $FSTAB
+"$CAT" <<EOT >> "$FSTAB"
 tmpfs /tmp      tmpfs  defaults,noatime,mode=1777  0 0
 tmpfs /var/tmp  tmpfs  defaults,noatime,mode=1777  0 0
 tmpfs /var/log  tmpfs  defaults,noatime,mode=0755  0 0
 EOT
 
 # Function to switch between RO and RW
-$CAT <<EOT >> $BASHRC
+"$CAT" <<EOT >> "$BASHRC"
 # Set variable identifying the filesystem you work in (used in the prompt below)
 set_bash_prompt(){
     fs_mode=\$(mount | sed -n -e "s/^\/dev\/.* on \/ .*(\(r[w|o]\).*/\1/p")
@@ -84,25 +85,26 @@ PROMPT_COMMAND=set_bash_prompt
 EOT
 
 # Disable swap and filesystem check and set it to read-only
-$SED -i "s/fsck.repair=yes/fsck.repair=no/g" $CMDLINE
-$SED -i "s/rootwait/rootwait fastboot noswap ro/g" $CMDLINE
+"$SED" -i "s/fsck.repair=yes/fsck.repair=no/g" "$CMDLINE"
+"$SED" -i "s/rootwait/rootwait fastboot noswap ro/g" "$CMDLINE"
 
 # Change dhcpcd.pid location
-#$SED -i "s/PIDFile=\\/run\\/dhcpcd.pid/PIDFile=\\/var\\/run\\/dhcpcd.pid/g" $DHCPDC5
+#"$SED" -i "s/PIDFile=\\/run\\/dhcpcd.pid/PIDFile=\\/var\\/run\\/dhcpcd.pid/g" "$DHCPDC5"
 
 # Modify /etc/fstab
-$SED -i "s/\\/\s\+ext4\s\+.*/\\/ \t ext4 \t defaults,noatime,ro \t 0 1/g" $FSTAB
+"$SED" -i "s/\\/\s\+ext4\s\+.*/\\/ \t ext4 \t defaults,noatime,ro \t 0 1/g" "$FSTAB"
 
 # Change random-seed
-$SED -i "/^RemainAfterExit=yes/a ExecStartPre=\\/usr\\/bin\\/echo \"\" >\\/tmp\\/random-seed" $RANDOMSED
+"$SED" -i "/^RemainAfterExit=yes/a ExecStartPre=\\/usr\\/bin\\/echo \"\" >\\/tmp\\/random-seed" "$RANDOMSED"
 
 # Refresh systemd to inform new changes
-$SYSTEMCTL daemon-reload
-$MOUNT -a -v
+"$SYSTEMCTL" daemon-reload
+"$MOUNT" -a -v
 
 # Use a temprary DNS for the upgrade
-$ECHO "nameserver 8.8.8.8" >> $RESOLFCFG
-$APT update --fix-missing ; $APT -y upgrade
+"$ECHO" "nameserver 8.8.8.8" >> "$RESOLFCFG"
+"$APT" update --fix-missing
+"$APT" -y upgrade
 
 # Reboot in RO mode
-$ECHO "Reboot the RaspberryPi to reflect the changes"
+"$ECHO" "Reboot the RaspberryPi to reflect the changes"

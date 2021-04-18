@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash env
 
 # Common files
 FSTAB="/etc/fstab"
@@ -19,34 +19,34 @@ LIGHTTPD="/etc/lighttpd/lighttpd.conf"
 
 # Run as ROOT
 if [[ "$EUID" -ne 0 ]]; then
-    $ECHO "Please run as root"
+    "$ECHO" "Please run as root"
     exit
 fi
 
 # Modify /etc/fstab
-$SED -i "s/\\/boot\s\+vfat\s\+.*/\\/boot \t vfat \t defaults,ro \t 0 2/g" $FSTAB
+"$SED" -i "s/\\/boot\s\+vfat\s\+.*/\\/boot \t vfat \t defaults,ro \t 0 2/g" "$FSTAB"
 
 # Modify lighttpd.conf
-$SED -i "s/\"\\/var\\/cache\\/lighttpd\\/uploads\"/\"\\/var\\/log\\/lighttpd\\/uploads\"/g" $LIGHTTPD
-$SED -i "s/\"\\/var\\/cache\\/lighttpd\\/compress\"/\"\\/var\\/log\\/lighttpd\\/compress\"/g" $LIGHTTPD
+"$SED" -i "s/\"\\/var\\/cache\\/lighttpd\\/uploads\"/\"\\/var\\/log\\/lighttpd\\/uploads\"/g" "$LIGHTTPD"
+"$SED" -i "s/\"\\/var\\/cache\\/lighttpd\\/compress\"/\"\\/var\\/log\\/lighttpd\\/compress\"/g" "$LIGHTTPD"
 
 # Create new files
-$TOUCH $PREPAREDIRS $BASHOUT
+"$TOUCH" "$PREPAREDIRS" "$BASHOUT"
 
 # Change $PREPAREDIRS permissions
-$CHMOD +x $PREPAREDIRS
+"$CHMOD" +x "$PREPAREDIRS"
 
-$CAT <<EOT >> $BASHOUT
+"$CAT" <<EOT >> "$BASHOUT"
 /usr/bin/mount -o remount,ro /
 /usr/bin/mount -o remount,ro /boot
 EOT
 
-$CAT <<EOT >> $FSTAB
+"$CAT" <<EOT >> "$FSTAB"
 tmpfs  /var/www/chart/data  tmpfs  defaults,noatime,mode=0755,uid=www-data,gid=www-data  0 0
 EOT
 
 # WA: Boot rapberry on ram: 37&t=63996
-$CAT <<EOT >> $PREPAREDIRS
+"$CAT" <<EOT >> "$PREPAREDIRS"
 #!/bin/bash
 
 ### BEGIN INIT INFO
@@ -93,7 +93,7 @@ esac
 EOT
 
 # Run Level for repare-dirs
-$UPDATERC prepare-dirs defaults 01 99
+"$UPDATERC" prepare-dirs defaults 01 99
 
 # Reboot in RO mode
-$ECHO "Reboot the RaspberryPi to reflect the changes"
+"$ECHO" "Reboot the RaspberryPi to reflect the changes"
