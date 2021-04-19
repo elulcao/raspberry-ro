@@ -1,25 +1,27 @@
 #!/bin/bash env
 
+# exit when any command fails
+set -e
+
 # Common files
 FSTAB="/etc/fstab"
+LIGHTTPD="/etc/lighttpd/lighttpd.conf"
 PREPAREDIRS="/etc/init.d/prepare-dirs"
 BASHOUT="/etc/bash.bash_logout"
 TMP="/tmp"
 
 # Commands
-ECHO="/usr/bin/echo"
 SED="/usr/bin/sed"
 CAT="/usr/bin/cat"
 TOUCH="/usr/bin/touch"
 CHMOD="/usr/bin/chmod"
 SYSTEMCTL="/usr/bin/systemctl"
 UPDATERC="/usr/sbin/update-rc.d"
-LIGHTTPD="/etc/lighttpd/lighttpd.conf"
 
 
 # Run as ROOT
 if [[ "$EUID" -ne 0 ]]; then
-    "$ECHO" "Please run as root"
+    echo "Please run as root"
     exit
 fi
 
@@ -39,10 +41,6 @@ fi
 "$CAT" <<EOT >> "$BASHOUT"
 /usr/bin/mount -o remount,ro /
 /usr/bin/mount -o remount,ro /boot
-EOT
-
-"$CAT" <<EOT >> "$FSTAB"
-tmpfs  /var/www/chart/data  tmpfs  defaults,noatime,mode=0755,uid=www-data,gid=www-data  0 0
 EOT
 
 # WA: Boot rapberry on ram: 37&t=63996
@@ -75,7 +73,6 @@ case "\${1:-''}" in
     \$MKDIR -p \${LIGHTDIR}/{compress,uploads}
     \$CHMOD -R 755 \${LIGHTDIR}
     \$CHMOD 1777 \${TMP} \${VTMP}
-    \$CHOWN -R www-data:www-data \${LIGHTDIR}
     ;;
   stop)
     ;;
@@ -96,4 +93,4 @@ EOT
 "$UPDATERC" prepare-dirs defaults 01 99
 
 # Reboot in RO mode
-"$ECHO" "Reboot the RaspberryPi to reflect the changes"
+echo "Reboot the RaspberryPi to reflect the changes"

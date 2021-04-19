@@ -1,5 +1,8 @@
 #!/bin/bash env
 
+# exit when any command fails
+set -e
+
 # Common files
 CMDLINE="/boot/cmdline.txt"
 DHCPDC5="/etc/systemd/system/dhcpcd5.service"
@@ -11,7 +14,6 @@ BASHRC="/etc/bash.bashrc"
 TMP="/tmp"
 
 # Commands
-ECHO="/usr/bin/echo"
 LN="/usr/bin/ln"
 RM="/usr/bin/rm"
 SED="/usr/bin/sed"
@@ -28,7 +30,7 @@ MOUNT="/usr/bin/mount"
 
 # Run as ROOT
 if [[ "$EUID" -ne 0 ]]; then
-    "$ECHO" "Please run as root"
+    echo "Please run as root"
     exit
 fi
 
@@ -102,9 +104,9 @@ EOT
 "$MOUNT" -a -v
 
 # Use a temprary DNS for the upgrade
-"$ECHO" "nameserver 8.8.8.8" >> "$RESOLFCFG"
+echo "nameserver 8.8.8.8" >> "$RESOLFCFG"
 "$APT" update --fix-missing
 "$APT" -y upgrade
 
 # Reboot in RO mode
-"$ECHO" "Reboot the RaspberryPi to reflect the changes"
+echo "Reboot the RaspberryPi to reflect the changes"
